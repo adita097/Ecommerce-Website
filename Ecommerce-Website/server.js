@@ -1,6 +1,7 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import connectDB from './config/db.js';
+import productRoutes from './routes/productRoutes.js';
 
 // Load environment variables
 dotenv.config();
@@ -12,6 +13,9 @@ const app = express();
 
 // Middleware
 app.use(express.json());
+
+// API Routes
+app.use('/api/products', productRoutes);
 
 // Root route
 app.get('/', (req, res) => {
