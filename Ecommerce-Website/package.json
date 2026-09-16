@@ -9,7 +9,10 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "server": "node server.js",
-    "start": "node server.js"
+    "start": "node server.js",
+    "seed": "node seeder.js",
+    "data:import": "node seeder.js",
+    "data:destroy": "node seeder.js -d"
   },
   "dependencies": {
     "dotenv": "^17.4.2",
