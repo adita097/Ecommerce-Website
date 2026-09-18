@@ -36,13 +36,15 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         />
         <span className="product-category-badge">{product.category}</span>
         {isOutOfStock ? (
-          <span className="product-stock-badge out-of-stock">Sold Out</span>
+          <span className="product-stock-badge out-of-stock">Out of Stock</span>
         ) : product.stock < 5 ? (
           <span className="product-stock-badge low-stock">
             Only {product.stock} left!
           </span>
         ) : (
-          <span className="product-stock-badge in-stock">In Stock</span>
+          <span className="product-stock-badge in-stock">
+            In Stock ({product.stock})
+          </span>
         )}
       </div>
 
@@ -74,3 +76,5 @@ export const ProductCard: React.FC<ProductCardProps> = ({
     </article>
   );
 };
+
+export default ProductCard;
