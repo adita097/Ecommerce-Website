@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import type { Product } from '../types/product';
-import { ProductCard } from '../components/ProductCard';
+import { ProductGrid } from '../components/ProductGrid';
 
 interface ProductsPageProps {
   searchTerm: string;
@@ -219,15 +219,10 @@ export const ProductsPage: React.FC<ProductsPageProps> = ({
                 <strong>{products.length}</strong> items
               </span>
             </div>
-            <div className="products-grid">
-              {filteredProducts.map((product) => (
-                <ProductCard
-                  key={product._id}
-                  product={product}
-                  onAddToCart={onAddToCart}
-                />
-              ))}
-            </div>
+            <ProductGrid
+              products={filteredProducts}
+              onAddToCart={onAddToCart}
+            />
           </>
         )}
       </section>

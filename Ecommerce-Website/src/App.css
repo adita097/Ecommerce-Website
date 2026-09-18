@@ -269,12 +269,13 @@
 }
 
 /* ==========================================================================
-   Product Grid & Cards
+   Product Grid & Cards (Clean, Responsive, Sensible Spacing)
    ========================================================================== */
+.product-grid,
 .products-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 28px;
+  gap: 24px;
 }
 
 .product-card {
@@ -676,8 +677,9 @@
     font-size: 14px;
   }
 
+  .product-grid,
   .products-grid {
     grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-    gap: 18px;
+    gap: 16px;
   }
 }
