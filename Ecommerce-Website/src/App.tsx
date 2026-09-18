@@ -33,6 +33,7 @@ function App() {
       />
       <ProductsPage
         searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
         onAddToCart={handleAddToCart}
       />
       <footer className="app-footer">

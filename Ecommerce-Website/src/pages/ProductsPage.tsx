@@ -4,11 +4,13 @@ import { ProductCard } from '../components/ProductCard';
 
 interface ProductsPageProps {
   searchTerm: string;
+  onSearchChange?: (term: string) => void;
   onAddToCart: (product: Product) => void;
 }
 
 export const ProductsPage: React.FC<ProductsPageProps> = ({
   searchTerm,
+  onSearchChange,
   onAddToCart,
 }) => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -25,7 +27,7 @@ export const ProductsPage: React.FC<ProductsPageProps> = ({
       const response = await fetch('/api/products');
 
       if (!response.ok) {
-        throw new Error(`HTTP Error ${response.status}: ${response.statusText}`);
+        throw new Error(`HTTP ${response.status} (${response.statusText || 'Error'})`);
       }
 
       const data = await response.json();
@@ -69,6 +71,13 @@ export const ProductsPage: React.FC<ProductsPageProps> = ({
     return matchesCategory && matchesSearch;
   });
 
+  const handleResetFilters = () => {
+    setSelectedCategory('All');
+    if (onSearchChange) {
+      onSearchChange('');
+    }
+  };
+
   return (
     <main className="products-page-container">
       {/* Page Header / Hero Banner */}
@@ -83,7 +92,7 @@ export const ProductsPage: React.FC<ProductsPageProps> = ({
       </section>
 
       {/* Category Navigation Filter Pills */}
-      {!loading && !error && categories.length > 1 && (
+      {!loading && !error && products.length > 0 && categories.length > 1 && (
         <section className="category-bar" aria-label="Product Categories">
           {categories.map((category) => (
             <button
@@ -113,68 +122,95 @@ export const ProductsPage: React.FC<ProductsPageProps> = ({
 
       {/* Main Content Area */}
       <section className="products-section">
-        {/* Loading Skeleton State */}
+        {/* 1. Loading State: Spinner & Shimmer Skeletons */}
         {loading && (
-          <div className="products-grid loading-grid" aria-label="Loading products">
-            {Array.from({ length: 8 }).map((_, index) => (
-              <div key={index} className="product-card skeleton-card">
-                <div className="skeleton skeleton-image" />
-                <div className="skeleton-body">
-                  <div className="skeleton skeleton-tag" />
-                  <div className="skeleton skeleton-title" />
-                  <div className="skeleton skeleton-text" />
-                  <div className="skeleton-footer">
-                    <div className="skeleton skeleton-price" />
-                    <div className="skeleton skeleton-btn" />
+          <div className="loading-container" role="status" aria-live="polite">
+            <div className="loading-header">
+              <div className="loading-spinner" />
+              <span className="loading-text">Loading catalog from server...</span>
+            </div>
+            <div className="products-grid loading-grid" aria-label="Loading products">
+              {Array.from({ length: 8 }).map((_, index) => (
+                <div key={index} className="product-card skeleton-card">
+                  <div className="skeleton skeleton-image" />
+                  <div className="skeleton-body">
+                    <div className="skeleton skeleton-tag" />
+                    <div className="skeleton skeleton-title" />
+                    <div className="skeleton skeleton-text" />
+                    <div className="skeleton-footer">
+                      <div className="skeleton skeleton-price" />
+                      <div className="skeleton skeleton-btn" />
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         )}
 
-        {/* Error State */}
+        {/* 2. Error State: API Failure Message & Retry */}
         {!loading && error && (
           <div className="state-card error-card" role="alert">
             <div className="state-icon">⚠️</div>
             <h2 className="state-title">Failed to Load Products</h2>
-            <p className="state-message">{error}</p>
+            <p className="state-message">
+              We encountered an issue fetching products from the API: <strong>{error}</strong>
+            </p>
             <p className="state-hint">
-              Ensure your backend Express server is running (e.g., <code>npm run server</code>).
+              Ensure your backend Express server is running on port 5000 and connected to MongoDB.
             </p>
             <button
               type="button"
               className="retry-btn"
               onClick={fetchProducts}
             >
-              🔄 Try Again
+              🔄 Retry Connection
             </button>
           </div>
         )}
 
-        {/* Empty / No Matches State */}
-        {!loading && !error && filteredProducts.length === 0 && (
-          <div className="state-card empty-card">
-            <div className="state-icon">🔍</div>
-            <h2 className="state-title">No Products Found</h2>
+        {/* 3. Empty State: API Success with 0 Products in Database */}
+        {!loading && !error && products.length === 0 && (
+          <div className="state-card empty-card" role="status">
+            <div className="state-icon">📦</div>
+            <h2 className="state-title">No Products in Catalog</h2>
             <p className="state-message">
-              {searchTerm
-                ? `No products match your search query "${searchTerm}".`
-                : 'No products are currently available in the selected category.'}
+              The database currently contains no products. You can seed sample products using development tools.
             </p>
-            {searchTerm && (
-              <button
-                type="button"
-                className="retry-btn"
-                onClick={() => setSelectedCategory('All')}
-              >
-                Reset Filters
-              </button>
-            )}
+            <p className="state-hint">
+              Run <code>npm run seed</code> in your terminal to insert sample products.
+            </p>
+            <button
+              type="button"
+              className="retry-btn"
+              onClick={fetchProducts}
+            >
+              🔄 Refresh Catalog
+            </button>
           </div>
         )}
 
-        {/* Products Grid */}
+        {/* 4. Filter / Search Empty State: Database has products but none match filter */}
+        {!loading && !error && products.length > 0 && filteredProducts.length === 0 && (
+          <div className="state-card empty-card" role="status">
+            <div className="state-icon">🔍</div>
+            <h2 className="state-title">No Matching Products Found</h2>
+            <p className="state-message">
+              {searchTerm
+                ? `No products match your search query "${searchTerm}" in the "${selectedCategory}" category.`
+                : `No products are available under the "${selectedCategory}" category.`}
+            </p>
+            <button
+              type="button"
+              className="retry-btn"
+              onClick={handleResetFilters}
+            >
+              Reset Filters & Search
+            </button>
+          </div>
+        )}
+
+        {/* 5. Success State: Products Grid */}
         {!loading && !error && filteredProducts.length > 0 && (
           <>
             <div className="products-results-info">
